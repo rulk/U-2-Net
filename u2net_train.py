@@ -49,10 +49,10 @@ def muti_bce_loss_fusion(d0, d1, d2, d3, d4, d5, d6, labels_v):
 model_name = 'u2net' #'u2netp'
 
 data_dir = os.path.join(os.getcwd(), 'train_data' + os.sep)
-tra_image_dir = os.path.join('DUTS', 'DUTS-TR', 'DUTS-TR', 'im_aug' + os.sep)
-tra_label_dir = os.path.join('DUTS', 'DUTS-TR', 'DUTS-TR', 'gt_aug' + os.sep)
+tra_image_dir = '/workspace/train_data/img/image_dataset' + os.sep
+tra_label_dir = '/workspace/train_data/mask/mask_dataset' + os.sep
 
-image_ext = '.jpg'
+image_ext = '.png'
 label_ext = '.png'
 
 model_dir = os.path.join(os.getcwd(), 'saved_models', model_name + os.sep)
@@ -63,7 +63,7 @@ batch_size_val = 1
 train_num = 0
 val_num = 0
 
-tra_img_name_list = glob.glob(data_dir + tra_image_dir + '*' + image_ext)
+tra_img_name_list = glob.glob( tra_image_dir + '*' + image_ext)
 
 tra_lbl_name_list = []
 for img_path in tra_img_name_list:
@@ -75,7 +75,7 @@ for img_path in tra_img_name_list:
 	for i in range(1,len(bbb)):
 		imidx = imidx + "." + bbb[i]
 
-	tra_lbl_name_list.append(data_dir + tra_label_dir + imidx + label_ext)
+	tra_lbl_name_list.append(tra_label_dir + imidx + label_ext)
 
 print("---")
 print("train images: ", len(tra_img_name_list))
@@ -101,7 +101,13 @@ elif(model_name=='u2netp'):
     net = U2NETP(3,1)
 
 if torch.cuda.is_available():
+    net.load_state_dict(torch.load(model_dir))
     net.cuda()
+else:
+    net.load_state_dict(torch.load(model_dir, map_location='cpu'))
+
+net.eval()
+
 
 # ------- 4. define optimizer --------
 print("---define optimizer...")
@@ -161,4 +167,5 @@ for epoch in range(0, epoch_num):
             running_tar_loss = 0.0
             net.train()  # resume train
             ite_num4val = 0
+
 
